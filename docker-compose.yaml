@@ -1,0 +1,6 @@
+services:
+  frontend:
+    # image: vfarcic/devops-toolkit
+    build: .
+    ports:
+    - "8081:80"
