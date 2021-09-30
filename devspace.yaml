@@ -1,0 +1,48 @@
+version: v1beta10
+
+vars:
+- name: IMAGE
+  value: vfarcic/devops-toolkit
+
+deployments:
+- name: docker-compose-not-demo
+  helm:
+    chart:
+      name: ./helm
+dev:
+  ports:
+  - imageSelector: ${IMAGE} # Select the Pod that runs our `${IMAGE}`
+    forward:
+    - port: 8082
+      remotePort: 80
+  open:
+  - url: http://localhost:8082
+  sync:
+  - imageSelector: ${IMAGE} # Select the Pod that runs our `${IMAGE}`
+    excludePaths:
+    - .git/
+  terminal:
+    imageSelector: ${IMAGE} # Select the Pod that runs our `${IMAGE}`
+    command:
+    - ./devspace_start.sh
+  replacePods:
+  - imageSelector: ${IMAGE} # Select the Pod that runs our `${IMAGE}`
+    replaceImage: loftsh/javascript:latest
+    patches:
+    - op: replace
+      path: spec.containers[0].command
+      value:
+      - sleep
+    - op: replace
+      path: spec.containers[0].args
+      value:
+      - "9999999"
+    - op: remove
+      path: spec.containers[0].securityContext
+profiles:
+- name: production
+  merge:
+    images:
+      app:
+        image: ${IMAGE} # Use the value of our `${IMAGE}` variable here (see vars above)
+        dockerfile: ./Dockerfile
